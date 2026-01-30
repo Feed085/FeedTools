@@ -105,7 +105,7 @@ function App() {
                 <ModernButton
                     text="Search & Install"
                     onClick={handleSearch}
-                    disabled={isProcessing}
+                    disabled={isProcessing} sa
                 />
             </div>
 
