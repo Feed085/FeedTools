@@ -1,17 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './index.css';
-
-const ModernButton = ({ text, onClick, disabled, className, variant, icon, ...props }) => (
-    <button
-        onClick={onClick}
-        disabled={disabled}
-        className={`modern-button ${disabled ? 'disabled' : ''} ${variant ? variant + '-button' : ''} ${className || ''}`}
-        {...props}
-    >
-        {icon && <span className="button-icon">{icon}</span>}
-        <span>{text}</span>
-    </button>
-);
+import ModernButton from './components/ModernButton';
 
 function App() {
     const [query, setQuery] = useState('');
@@ -21,6 +10,7 @@ function App() {
     const [steamToolsFound, setSteamToolsFound] = useState(true);
     const [matches, setMatches] = useState(null);
     const [showMissingDialog, setShowMissingDialog] = useState(false);
+    const [currentView, setCurrentView] = useState('tool'); // Default to 'tool' for Electron app
 
     const logEndRef = useRef(null);
     const langDropdownRef = useRef(null);
@@ -97,18 +87,6 @@ function App() {
         window.api.confirmSelection(appid);
     };
 
-    const [currentView, setCurrentView] = useState('home'); // 'home' or 'tool'
-    const [videoIndex, setVideoIndex] = useState(0);
-    const videos = [
-        '/videos/rdr2.mp4',
-        '/videos/tlou.mp4',
-        '/videos/gow.mp4'
-    ];
-
-    const handleVideoEnd = () => {
-        setVideoIndex((prevIndex) => (prevIndex + 1) % videos.length);
-    };
-
     const [showLangMenu, setShowLangMenu] = useState(false);
     const [selectedLang, setSelectedLang] = useState('TR');
     const languages = [
@@ -120,138 +98,11 @@ function App() {
         { code: 'RU', name: 'Русский', flag: '🇷🇺' }
     ];
 
-    const [currentText, setCurrentText] = useState('');
-    const [titleIndex, setTitleIndex] = useState(0);
-    const [isDeleting, setIsDeleting] = useState(false);
-    const titles = ["Sınırsız Eğlence", "Hızlı Kurulum", "Geniş Kütüphane", "Reiden Güvencesiyle"];
-
-    useEffect(() => {
-        const type = () => {
-            const currentTitle = titles[titleIndex];
-            const speed = isDeleting ? 50 : 100;
-
-            if (!isDeleting && currentText === currentTitle) {
-                setTimeout(() => setIsDeleting(true), 1500);
-            } else if (isDeleting && currentText === '') {
-                setIsDeleting(false);
-                setTitleIndex((prev) => (prev + 1) % titles.length);
-            } else {
-                const nextText = isDeleting
-                    ? currentTitle.substring(0, currentText.length - 1)
-                    : currentTitle.substring(0, currentText.length + 1);
-                setCurrentText(nextText);
-            }
-        };
-
-        const timer = setTimeout(type, isDeleting ? 50 : 150);
-        return () => clearTimeout(timer);
-    }, [currentText, isDeleting, titleIndex]);
-
-    return (
-        <div className="app-container">
-            {currentView === 'home' && (
-                <div className="video-background">
-                    <video
-                        key={videos[videoIndex]}
-                        autoPlay
-                        muted
-                        playsInline
-                        onEnded={handleVideoEnd}
-                        className="bg-video"
-                        onCanPlay={(e) => e.target.play()}
-                    >
-                        <source src={videos[videoIndex]} type="video/mp4" />
-                    </video>
-                    <div className="video-overlay"></div>
-                </div>
-            )}
-
-            <nav className="navbar">
-                <div className="nav-left">
-                    <img src="./src/assets/logo.png" alt="Logo" className="nav-logo" />
-                    <span className="nav-brand">FEEDTOOLS</span>
-                </div>
-                <div className="nav-center">
-                    <button className={`nav-link ${currentView === 'home' ? 'active' : ''}`} onClick={() => setCurrentView('home')}>ANASAYFA</button>
-                    <button className="nav-link" onClick={() => alert("Paketler yakında!")}>PAKETLER</button>
-                    <button className="nav-link" onClick={() => alert("Görüntüler yakında!")}>GALERİ</button>
-                    <button className="nav-link" onClick={() => alert("SSS yakında!")}>DESTEK</button>
-                    <button className={`nav-link ${currentView === 'tool' ? 'active' : ''}`} onClick={() => setCurrentView('tool')}>KÜTÜPHANE</button>
-                </div>
-
-                <div className="nav-right">
-                    <div className="nav-actions">
-                        <button className="icon-btn" title="Ara">🔍</button>
-                        <div className="lang-dropdown-container" ref={langDropdownRef}>
-                            <button className="lang-btn" onClick={() => setShowLangMenu(!showLangMenu)}>
-                                <span className="lang-icon">🌐</span>
-                                {selectedLang}
-                            </button>
-                            {showLangMenu && (
-                                <div className="lang-menu">
-                                    {languages.map(lang => (
-                                        <div
-                                            key={lang.code}
-                                            className="lang-item"
-                                            onClick={() => {
-                                                setSelectedLang(lang.code);
-                                                setShowLangMenu(false);
-                                            }}
-                                        >
-                                            <span className="lang-flag">{lang.flag}</span>
-                                            <span className="lang-name">{lang.name}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            </nav>
-
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
-                {currentView === 'home' ? (
-                    <div className="landing-page">
-                        <div className="hero-section">
-                            <div className="hero-badge">
-                                <span className="hero-badge-dot"></span>
-                                <span className="hero-badge-text">{currentText}</span>
-                            </div>
-                            <h1 className="hero-title">Oyun Dünyasına<br /><span className="highlight">FeedTools</span> ile Adım At</h1>
-                            <p className="hero-subtitle">
-                                Steam kütüphanenizi en verimli şekilde yönetin. Aylık özel abonelik paketlerimizle
-                                geniş oyun arşivlerine düşük maliyetle erişin. Favori oyunlarınıza anında ulaşın,
-                                kütüphanenizi tek bir tıkla zenginleştirmenin ve sınırsız eğlencenin tadını çıkarın.
-                            </p>
-                            <div className="hero-actions">
-                                <ModernButton
-                                    text="Hemen Keşfet"
-                                    variant="primary"
-                                    icon="✨"
-                                    onClick={() => setCurrentView('tool')}
-                                />
-                                <ModernButton
-                                    text="Paketleri İncele"
-                                    variant="secondary"
-                                    icon="💎"
-                                    onClick={() => alert("Abonelik paketleri çok yakında burada olacak!")}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="scroll-indicator" onClick={() => document.querySelector('.hero-section')?.scrollIntoView({ behavior: 'smooth' })} style={{ cursor: 'pointer' }}>
-                            <div className="mouse">
-                                <div className="wheel"></div>
-                            </div>
-                            <div className="arrow">
-                                <span></span>
-                                <span></span>
-                                <span></span>
-                            </div>
-                        </div>
-                    </div>
-                ) : (
-                    <div className="flex-column" style={{ height: '100%' }}>
+    const renderContent = () => {
+        switch (currentView) {
+            case 'tool':
+                return (
+                    <div className="flex-column" style={{ height: '100%', padding: '20px' }}>
                         <header className="title-section">
                             <h1 className="title">Kütüphane Yönetimi</h1>
                             <p className="subtitle">Steam veritabanında ara ve kütüphaneni genişlet</p>
@@ -320,7 +171,79 @@ function App() {
                             </section>
                         </div>
                     </div>
-                )}
+                );
+            case 'support':
+                return (
+                    <div className="landing-page" style={{ justifyContent: 'center' }}>
+                        <div className="hero-section">
+                            <h1 className="hero-title">Destek Merkezi</h1>
+                            <p className="hero-subtitle">
+                                Herhangi bir sorun yaşarsanız Discord sunucumuza katılarak veya bize yazarak destek alabilirsiniz.
+                            </p>
+                            <ModernButton
+                                text="Discord Sunucusuna Katıl"
+                                variant="primary"
+                                onClick={() => window.open('https://discord.gg/feedtools', '_blank')}
+                            />
+                        </div>
+                    </div>
+                );
+            default:
+                return (
+                    <div className="landing-page" style={{ justifyContent: 'center' }}>
+                        <div className="hero-section">
+                            <h1 className="hero-title">Hoşgeldiniz</h1>
+                            <p className="hero-subtitle">Lütfen menüden bir işlem seçin.</p>
+                        </div>
+                    </div>
+                );
+        }
+    };
+
+    return (
+        <div className="app-container">
+            <nav className="navbar">
+                <div className="nav-left">
+                    <img src="./src/assets/logo.png" alt="Logo" className="nav-logo" />
+                    <span className="nav-brand">FEEDTOOLS</span>
+                </div>
+                <div className="nav-center">
+                    <button className={`nav-link ${currentView === 'tool' ? 'active' : ''}`} onClick={() => setCurrentView('tool')}>KÜTÜPHANE</button>
+                    <button className={`nav-link ${currentView === 'support' ? 'active' : ''}`} onClick={() => setCurrentView('support')}>DESTEK</button>
+                    <button className="nav-link" onClick={() => window.api.toggleFullScreen()}>TAM EKRAN</button>
+                </div>
+
+                <div className="nav-right">
+                    <div className="nav-actions">
+                        <div className="lang-dropdown-container" ref={langDropdownRef}>
+                            <button className="lang-btn" onClick={() => setShowLangMenu(!showLangMenu)}>
+                                <span className="lang-icon">🌐</span>
+                                {selectedLang}
+                            </button>
+                            {showLangMenu && (
+                                <div className="lang-menu">
+                                    {languages.map(lang => (
+                                        <div
+                                            key={lang.code}
+                                            className="lang-item"
+                                            onClick={() => {
+                                                setSelectedLang(lang.code);
+                                                setShowLangMenu(false);
+                                            }}
+                                        >
+                                            <span className="lang-flag">{lang.flag}</span>
+                                            <span className="lang-name">{lang.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+                {renderContent()}
             </div>
 
             {/* Modals */}
