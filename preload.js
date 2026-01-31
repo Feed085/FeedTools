@@ -12,4 +12,5 @@ contextBridge.exposeInMainWorld('api', {
     onSearchError: (callback) => ipcRenderer.on('search-error', (_, msg) => callback(msg)),
     onShowSelection: (callback) => ipcRenderer.on('show-selection', (_, matches) => callback(matches)),
     onProcessComplete: (callback) => ipcRenderer.on('process-complete', (_, result) => callback(result)),
+    toggleFullScreen: () => ipcRenderer.send('toggle-fullscreen'),
 });

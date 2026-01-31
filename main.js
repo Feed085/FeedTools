@@ -20,17 +20,20 @@ function checkAdmin() {
 const createWindow = () => {
     // Create the browser window.
     mainWindow = new BrowserWindow({
-        width: 600,
-        height: 600,
-        resizable: false,
+        width: 1000,
+        height: 800,
+        minWidth: 600,
+        minHeight: 600,
+        resizable: true,
+        maximizable: true,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             nodeIntegration: false,
             contextIsolation: true,
         },
-        backgroundColor: '#1a1b26',
+        backgroundColor: '#0f111a',
         autoHideMenuBar: true,
-        title: "Steam Tools App Adder Made By Remix"
+        title: "FeedTools"
     });
 
     // Load the app.
@@ -131,6 +134,12 @@ ipcMain.on('start-download', async (event, query) => {
 ipcMain.on('confirm-selection', (event, appid) => {
     const window = BrowserWindow.fromWebContents(event.sender);
     startDeepDownload(appid, window);
+});
+
+ipcMain.on('toggle-fullscreen', () => {
+    if (mainWindow) {
+        mainWindow.setFullScreen(!mainWindow.isFullScreen());
+    }
 });
 
 async function startDeepDownload(appId, window) {
